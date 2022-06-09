@@ -77,7 +77,31 @@ class ChessBoard
     hash
   end
 
+  def find_square(coord)
+    @board.find { |square| square.pos == coord }
+  end
+
   def find_shortest(start, finish)
+    start_square = find_square(start)
+    end_square = find_square(finish)
+    info = bfs_info
+    info[end_square][:distance] = 0
+    queue = []
+    queue.push(end_square)
+
+    until info[start_square][:distance]
+      sqr = queue.shift
+      for j in 0...sqr.neighbors.length
+        temp = find_square(sqr.neighbors[j])
+        if info[temp][:distance].nil?
+          info[temp][:distance] = 1 + info[sqr][:distance]
+          info[temp][:predecessor] = sqr
+          queue.push(temp)
+        end
+      end
+    end
+    info[start_square][:distance]
+  end
     # for each node make hash:
     # {distance: nil, predecessor: nil}
     # perhaps in a new class
@@ -88,7 +112,6 @@ class ChessBoard
     # enqueue neighbors if predecessor.nil?
     # continue until start is found
     # then print the length and path
-  end
 end
   
 b = ChessBoard.new(8, 8)
