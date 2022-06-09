@@ -1,25 +1,3 @@
-# Knight's travails
-
-
-# Classes needed
-# 1 - Square - initializes a square based on a 2x1 vector eg. [3,5]
-#     Then the square will have an associated adjacency list with all neigbors that
-#     can be visited by knight's move. 
-
-# 2 - Board - Creates a nxn board (default is 8x8) and populates with the squares from
-#     class Square.
-
-# Now that we have a board filledwith squares and their adjacency lists, we can use
-# breadth-first-search to find the shortest path between two given squares on the board.
-
-# Steps:
-
-# 1 - Make a list where all squares are initialized so: {distance: nil, predecessor: nil}
-# 2 - Set the goal squares distance to 
-# 3 - Iterate over neighbors; if they have not been visited, update its list with predecessor and
-#     set distance as one more than that of the predecessor.
-# 4 - When the algorithm reaches the start square, terminate and print distance and all the predecessors.
-
 class Square
   include Comparable
   attr_reader :pos, :neighbors
@@ -40,11 +18,11 @@ class Square
 
   def adj_list(x_dim, y_dim)
     list = []
-    @@MOVES.each { |move| list << add_v(move) }
+    @@MOVES.each { |move| list << add_vectors(move) }
     list.select {|a,b| a.between?(0, x_dim - 1) && b.between?(0, y_dim - 1) }
   end
 
-  def add_v(knight_move)
+  def add_vectors(knight_move)
     @pos.zip(knight_move).map { |a, b| a + b }
   end
 
@@ -73,7 +51,7 @@ class ChessBoard
 
   def bfs_info
     hash = {}
-    @board.each { |square| hash[square] = {distance: nil, predecessor:nil} }
+    @board.each { |square| hash[square] = {distance: nil, predecessor: nil} }
     hash
   end
 
@@ -81,6 +59,7 @@ class ChessBoard
     @board.find { |square| square.pos == coord }
   end
 
+  # TODO: make #find_shortest, and #get_predecessors more clear
   def find_shortest(start, finish)
     start_square = find_square(start)
     end_square = find_square(finish)
@@ -88,30 +67,32 @@ class ChessBoard
     info[end_square][:distance] = 0
     queue = []
     queue.push(end_square)
-
     until info[start_square][:distance]
       sqr = queue.shift
-      for j in 0...sqr.neighbors.length
-        temp = find_square(sqr.neighbors[j])
-        if info[temp][:distance].nil?
-          info[temp][:distance] = 1 + info[sqr][:distance]
-          info[temp][:predecessor] = sqr
-          queue.push(temp)
+      sqr.neighbors.each_index do |i|
+        adj_sqr = find_square(sqr.neighbors[i])
+        if info[adj_sqr][:distance].nil?
+          info[adj_sqr][:distance] = 1 + info[sqr][:distance]
+          info[adj_sqr][:predecessor] = sqr
+          queue.push(adj_sqr)
         end
       end
     end
-    info[start_square][:distance]
+    path = get_predecessors(start_square, info[start_square][:predecessor], info)
+    print_result(info[start_square][:distance], path)
   end
-    # for each node make hash:
-    # {distance: nil, predecessor: nil}
-    # perhaps in a new class
-    # set finish.distance to 0
-    # enqueue finish, and visit its neighbors in order
-    # dequeue finish
-    # set their distances to 1 and predecessor to finish
-    # enqueue neighbors if predecessor.nil?
-    # continue until start is found
-    # then print the length and path
+
+  def get_predecessors(start, predec, info, list = [])
+    list << start.pos
+    return list if predec.nil?
+    
+    get_predecessors(predec, info[predec][:predecessor], info, list)
+  end
+
+  def print_result(distance, predecessors)
+    puts "You made it in #{distance} squares! Here's your path:\n"
+    predecessors.each { |predecessor| puts "#{predecessor}\n"}
+  end
 end
   
 b = ChessBoard.new(8, 8)
