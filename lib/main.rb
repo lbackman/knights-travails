@@ -90,7 +90,7 @@ class ChessBoard
   end
 
   def print_result(distance, predecessors)
-    puts "You made it in #{distance} squares! Here's your path:\n"
+    puts "You made it in #{distance} moves! Here's your path:\n"
     predecessors.each { |predecessor| puts "#{predecessor}\n"}
   end
 end
