@@ -1,5 +1,4 @@
 class Square
-  include Comparable
   attr_reader :pos, :neighbors
 
   @@MOVES = [[-2, -1],
@@ -16,6 +15,8 @@ class Square
     @neighbors = adj_list(x_dim, y_dim)
   end
 
+  private
+
   def adj_list(x_dim, y_dim)
     list = []
     @@MOVES.each { |move| list << add_vectors(move) }
@@ -25,21 +26,39 @@ class Square
   def add_vectors(knight_move)
     @pos.zip(knight_move).map { |a, b| a + b }
   end
-
-  def <=>(other)
-    pos.first + 10 * pos.last <=> other.pos.first + 10 * other.pos.last
-  end
-
-  def to_s
-    "#{@pos}"
-  end
 end
 
 class ChessBoard
   attr_reader :board
+
   def initialize(m, n)
     @board = create_board(m, n)
   end
+
+  # TODO: make #find_shortest, and #get_predecessors more clear
+  def find_shortest(first, last)
+    start = find_square(first)
+    goal = find_square(last)
+    info = bfs_info
+    info[goal][:distance] = 0
+    queue = []
+    queue.push(goal)
+    until info[start][:distance]
+      sqr = queue.shift
+      sqr.neighbors.each do |neighbor|
+        adj_sqr = find_square(neighbor)
+        if info[adj_sqr][:distance].nil?
+          info[adj_sqr][:distance] = 1 + info[sqr][:distance]
+          info[adj_sqr][:predecessor] = sqr
+          queue.push(adj_sqr)
+        end
+      end
+    end
+    path = get_predecessors(start, info[start][:predecessor], info)
+    print_result(info[start][:distance], path)
+  end
+
+  private
 
   def create_board(m, n)
     board_hash = {}
@@ -59,34 +78,11 @@ class ChessBoard
     @board[coord]
   end
 
-  # TODO: make #find_shortest, and #get_predecessors more clear
-  def find_shortest(start, finish)
-    start_square = find_square(start)
-    end_square = find_square(finish)
-    info = bfs_info
-    info[end_square][:distance] = 0
-    queue = []
-    queue.push(end_square)
-    until info[start_square][:distance]
-      sqr = queue.shift
-      sqr.neighbors.each do |neighbor|
-        adj_sqr = find_square(neighbor)
-        if info[adj_sqr][:distance].nil?
-          info[adj_sqr][:distance] = 1 + info[sqr][:distance]
-          info[adj_sqr][:predecessor] = sqr
-          queue.push(adj_sqr)
-        end
-      end
-    end
-    path = get_predecessors(start_square, info[start_square][:predecessor], info)
-    print_result(info[start_square][:distance], path)
-  end
-
-  def get_predecessors(start, predec, info, list = [])
+  def get_predecessors(start, pre, info, list = [])
     list << start.pos
-    return list if predec.nil?
+    return list if pre.nil?
     
-    get_predecessors(predec, info[predec][:predecessor], info, list)
+    get_predecessors(pre, info[pre][:predecessor], info, list)
   end
 
   def print_result(distance, predecessors)
