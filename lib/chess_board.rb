@@ -5,8 +5,8 @@ class ChessBoard
     @board = create_board(m, n)
   end
 
-  # TODO: make #find_shortest, and #get_predecessors more clear
-  def find_shortest(first, last)
+  # TODO: make #knight_moves, and #get_predecessors more clear
+  def knight_moves(first, last)
     start = find_square(first)
     goal = find_square(last)
     info = bfs_info
