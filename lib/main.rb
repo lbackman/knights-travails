@@ -42,7 +42,7 @@ class ChessBoard
     info = bfs_info
     info[goal][:distance] = 0
     queue = []
-    queue.push(goal)
+    queue << goal
     until info[start][:distance]
       sqr = queue.shift
       sqr.neighbors.each do |neighbor|
@@ -50,7 +50,7 @@ class ChessBoard
         if info[adj_sqr][:distance].nil?
           info[adj_sqr][:distance] = 1 + info[sqr][:distance]
           info[adj_sqr][:predecessor] = sqr
-          queue.push(adj_sqr)
+          queue << adj_sqr
         end
       end
     end
