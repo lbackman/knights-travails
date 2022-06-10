@@ -2,14 +2,14 @@ class Square
   include Comparable
   attr_reader :pos, :neighbors
 
-  @@MOVES = [[1, 2],
-            [1, -2],
-            [-1, 2],
-           [-1, -2],
-             [2, 1],
-            [2, -1],
-            [-2, 1],
-           [-2, -1]]
+  @@MOVES = [[-2, -1],
+             [-2,  1],
+             [-1, -2],
+             [-1,  2],
+             [ 1, -2],
+             [ 1,  2],
+             [ 2, -1],
+             [ 2,  1]]
 
   def initialize(x_pos, y_pos, x_dim, y_dim)
     @pos = [x_pos, y_pos]
@@ -42,21 +42,21 @@ class ChessBoard
   end
 
   def create_board(m, n)
-    board = []
+    board_hash = {}
     n.times do |i|
-      m.times { |j| board << Square.new(j, i, m, n) }
+      m.times { |j| board_hash[[j,i]] = Square.new(j, i, m, n) }
     end
-    board
+    board_hash
   end
 
   def bfs_info
     hash = {}
-    @board.each { |square| hash[square] = {distance: nil, predecessor: nil} }
+    @board.each { |_key, val| hash[val] = {distance: nil, predecessor: nil} }
     hash
   end
 
   def find_square(coord)
-    @board.find { |square| square.pos == coord }
+    @board[coord]
   end
 
   # TODO: make #find_shortest, and #get_predecessors more clear
@@ -69,8 +69,8 @@ class ChessBoard
     queue.push(end_square)
     until info[start_square][:distance]
       sqr = queue.shift
-      sqr.neighbors.each_index do |i|
-        adj_sqr = find_square(sqr.neighbors[i])
+      sqr.neighbors.each do |neighbor|
+        adj_sqr = find_square(neighbor)
         if info[adj_sqr][:distance].nil?
           info[adj_sqr][:distance] = 1 + info[sqr][:distance]
           info[adj_sqr][:predecessor] = sqr
